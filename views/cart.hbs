@@ -26,7 +26,8 @@
     </div>
     <hr>
     <div class="text-right">
-        <a href="/checkout" type="button" class="btn btn-success">Checkout</a>
+        <input type="hidden" value="{{sessionId}}" id="hidden_session" >
+        <a href="/checkout" id="checkout" type="button" class="btn btn-success">Checkout</a>
     </div>
 {{ else }}
     Your shopping cart is empty.

@@ -1,11 +1,13 @@
-var express = require('express');
-var router = express.Router();
-const stripe = require('stripe')
+const express = require('express');
+const router = express.Router();
 
-var fs = require('fs');
+// Set your secret key: remember to change this to your live secret key in production
+// See your keys here: https://dashboard.stripe.com/account/apikeys
+const stripe = require('stripe')('sk_test_4eC39HqLyjWDarjtT1zdp7dc')
 
-var Cart = require('../models/cart');
-var products = JSON.parse(fs.readFileSync('./data/products.json', 'utf8'));
+const fs = require('fs');
+const Cart = require('../models/cart');
+const products = JSON.parse(fs.readFileSync('./data/products.json', 'utf8'));
 
 router.get('/', function (req, res, next) {
   res.render('index', 
@@ -18,9 +20,9 @@ router.get('/', function (req, res, next) {
 });
 
 router.get('/add/:id', function(req, res, next) {
-  var productId = req.params.id;
-  var cart = new Cart(req.session.cart ? req.session.cart : {});
-  var product = products.filter(function(item) {
+  const productId = req.params.id;
+  const cart = new Cart(req.session.cart ? req.session.cart : {});
+  const product = products.filter(function(item) {
     return item.id == productId;
   });
   cart.add(product[0], productId);
@@ -43,8 +45,8 @@ router.get('/cart', function(req, res, next) {
 });
 
 router.get('/remove/:id', function(req, res, next) {
-  var productId = req.params.id;
-  var cart = new Cart(req.session.cart ? req.session.cart : {});
+  const productId = req.params.id;
+  const cart = new Cart(req.session.cart ? req.session.cart : {});
 
   cart.remove(productId);
   req.session.cart = cart;
@@ -52,45 +54,34 @@ router.get('/remove/:id', function(req, res, next) {
 });
 
 router.get('/checkout', (req, res) => {
-  console.log('checkout')
-
-  
-
-  // Set your secret key: remember to change this to your live secret key in production
-// See your keys here: https://dashboard.stripe.com/account/apikeys
-const stripe = require('stripe')('sk_test_4eC39HqLyjWDarjtT1zdp7dc');
-var cart = new Cart(req.session.cart ? req.session.cart : {});
-let session
-const products = cart.getItems()
-console.log({products})
-console.log(products[0].item)
-// res.render('checkout')
-const line_items = []
-products.forEach( product => {
-  line_items.push({
-    name: product.item.title,
-    description: product.item.description,
-    images: ['https://example.com/t-shirt.png'],
-    amount: product.price + '00',
-    currency: 'usd',
-    quantity: product.quantity
+  const cart = new Cart(req.session.cart ? req.session.cart : {});
+  let session
+  const products = cart.getItems()
+  const line_items = []
+  products.forEach( product => {
+    line_items.push({
+      name: product.item.title,
+      description: product.item.description,
+      images: ['https://example.com/t-shirt.png'],
+      amount: product.price + '00',
+      currency: 'usd',
+      quantity: product.quantity
+    })
   })
-})
-console.log({line_items})
-// res.render('checkout')
-if (line_items.length > 0) {
-  (async () => {
-    session = await stripe.checkout.sessions.create({
-      payment_method_types: ['card'],
-      line_items: line_items,
-      success_url: 'http://localhost:3000/checkout_success',
-      cancel_url: 'http://localhost:3000/checkout_failed',
-    });
+  console.log({line_items})
+  if (line_items.length > 0) {
+    (async () => {
+      session = await stripe.checkout.sessions.create({
+        payment_method_types: ['card'],
+        line_items: line_items,
+        success_url: 'http://localhost:3000/checkout_success',
+        cancel_url: 'http://localhost:3000/checkout_failed',
+      });
 
-    session ? res.render('checkout', {sessionId: session.id}) : res.render('checkout', {sessionId: null, error: 'stopp'})
-    
-  })();
-}
+      session ? res.render('checkout', {sessionId: session.id}) : res.render('checkout', {sessionId: null, error: 'stopp'})
+      
+    })();
+  }
 
 })
 
