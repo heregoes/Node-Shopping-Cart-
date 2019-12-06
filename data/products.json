@@ -2,6 +2,7 @@
   {
     "id": 1,
     "title": "Apples",
+    "images": "",
     "description": "Apples are <span class=\"label label-info\">25 CHF each</span>",
     "price": 25
   },

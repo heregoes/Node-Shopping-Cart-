@@ -77,9 +77,9 @@ router.get('/checkout', (req, res) => {
         success_url: 'http://localhost:3000/checkout_success',
         cancel_url: 'http://localhost:3000/checkout_failed',
       });
-
+      console.log({session})
       session ? res.render('checkout', {sessionId: session.id}) : res.render('checkout', {sessionId: null, error: 'stopp'})
-      
+
     })();
   }
 
